@@ -19,8 +19,8 @@ void V(int k,  double x,  double y, int i,  double* ret_x,  double* ret_y, coeff
 	e = (*co).ec[i];
 	f = (*co).fc[i];
 	r = sqrt( pow(x, 2.0) + pow (y, 2.0) );
-	theta = atan(x / y);
-	phi   = atan(y / x);
+	theta = atan2(y,x);
+	phi   = atan2(x,y);
 
 	switch(k){
 		case 0: /* Linear */
@@ -78,7 +78,7 @@ void V(int k,  double x,  double y, int i,  double* ret_x,  double* ret_y, coeff
 			*ret_y = r * ( pow( P0, 3.0 ) - pow( P1, 3.0 ) );
 			break;
 		case 13: /* Julia */
-			omega = 0.0;
+			omega = choose(M_PI, 0.0);
 			*ret_x = sqrt(r) * cos((theta / 2.0) + omega);
 			*ret_y = sqrt(r) * sin((theta / 2.0) + omega);
 			break;
