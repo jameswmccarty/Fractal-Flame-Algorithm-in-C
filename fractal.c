@@ -840,7 +840,7 @@ render (void *fract)
 	      for (s = 0; s < fractal->symmetry; s++)
 		{
 
-		  theta2 += ((2 * M_PI) / (s + 1));
+		  theta2 += ((2 * M_PI) / (fractal->symmetry));
 		  x_rot = newx * cos (theta2) - newy * sin (theta2);
 		  y_rot = newx * sin (theta2) + newy * cos (theta2);
 
