@@ -1054,13 +1054,13 @@ main (int argc, char **argv)
 	exit (EXIT_FAILURE);
     }
   /* gamma and log correct */
-  printf ("Finializing and writing out...\n");
+  gamma_log (&fractal);
+	printf ("Finializing and writing out...\n");
   if (fractal.sup > 1)
     {
       reduce (&fractal);
     }
   /* write out the file */
-  gamma_log (&fractal);
   write_to_tiff (&fractal);
   /* clean up */
   free (threads);
