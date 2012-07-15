@@ -2,9 +2,9 @@
  * This code may be freely redistributed under the 
  * terms of the GPL
  *
- * James McCarty <jameswmccarty@gmail.com>
+ * James McCarty 
  *
- * 2011
+ * 2012
  */
 
 #include <stdlib.h>
