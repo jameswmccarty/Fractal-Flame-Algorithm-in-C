@@ -2,9 +2,9 @@
  * This code may be freely redistributed under the 
  * terms of the GPL
  *
- * James W. McCarty
+ * James McCarty <jameswmccarty@gmail.com>
  *
- * 2012
+ * 2011
  */
 
 #include <stdlib.h>
@@ -544,12 +544,12 @@ write_to_tiff (flame * fractal)
 	    (*fractal).pixels[row][col].r;
 	  raster[(col * 3) + 1] =
 	    invert ==
-	    1 ? ~((*fractal).pixels[row][col].g) : (*fractal).
-	    pixels[row][col].g;
+	    1 ? ~((*fractal).pixels[row][col].
+		  g) : (*fractal).pixels[row][col].g;
 	  raster[(col * 3) + 2] =
 	    invert ==
-	    1 ? ~((*fractal).pixels[row][col].b) : (*fractal).
-	    pixels[row][col].b;
+	    1 ? ~((*fractal).pixels[row][col].
+		  b) : (*fractal).pixels[row][col].b;
 	}
       if (TIFFWriteScanline (output, raster, row, (*fractal).xres * 3) != 1)
 	{
@@ -567,7 +567,7 @@ write_to_tiff (flame * fractal)
 void *
 render (void *fract)
 {
-  double r, theta, x, y, c, f;
+  double r, theta, x, y, c, f, b, e;
   double newx, newy, pa1, pa2, pa3, pa4;
   double P0, P1, prefix, t;
   int i, k, num, s;
@@ -597,6 +597,8 @@ render (void *fract)
 
 	  c = fractal->coarray[i].cc;
 	  f = fractal->coarray[i].fc;
+	  b = fractal->coarray[i].bc;
+	  e = fractal->coarray[i].ec;
 
 	  x =
 	    fractal->coarray[i].ac * newx + fractal->coarray[i].bc * newy +
@@ -824,6 +826,14 @@ render (void *fract)
 	      newx = RANDR (0, 1.) - 0.5;
 	      newy = RANDR (0, 1.) - 0.5;
 	      break;
+	    case 34:		/* Not Broken Waves */
+	      newx = x + b * sin (y / pow (c, 2.0));
+	      newy = y + e * sin (x / pow (f, 2.0));
+	      break;
+	    case 35:		/* something something */
+	      newx = y;
+	      newy = sin (x);
+	      break;
 	    default:
 	      break;
 	    }
@@ -863,19 +873,32 @@ render (void *fract)
 			{
 			  pthread_mutex_lock (&(fractal->lock[y1]));
 			  point = &fractal->pixels[y1][x1];
+
+			  if (!point->value.counter)
+			    {
+			      point->r = fractal->coarray[i].r;
+			      point->g = fractal->coarray[i].g;
+			      point->b = fractal->coarray[i].b;
+			    }
+			  else
+			    {
+			      red =
+				(unsigned
+				 char) ((point->r +
+					 fractal->coarray[i].r) / 2);
+			      point->r = red;
+			      green =
+				(unsigned
+				 char) ((point->g +
+					 fractal->coarray[i].g) / 2);
+			      point->g = green;
+			      blue =
+				(unsigned
+				 char) ((point->b +
+					 fractal->coarray[i].b) / 2);
+			      point->b = blue;
+			    }
 			  point->value.counter++;
-			  red =
-			    (unsigned
-			     char) ((point->r + fractal->coarray[i].r) / 2);
-			  point->r = red;
-			  green =
-			    (unsigned
-			     char) ((point->g + fractal->coarray[i].g) / 2);
-			  point->g = green;
-			  blue =
-			    (unsigned
-			     char) ((point->b + fractal->coarray[i].b) / 2);
-			  point->b = blue;
 			  pthread_mutex_unlock (&(fractal->lock[y1]));
 			}
 		    }
@@ -903,8 +926,8 @@ gamma_log (flame * fractal)
 	  if (fractal->pixels[row][col].value.counter != 0)
 	    {
 	      fractal->pixels[row][col].value.normal =
-		(float) log10 ((double) fractal->pixels[row][col].value.
-			       counter);
+		(float) log10 ((double) fractal->pixels[row][col].
+			       value.counter);
 	      if (fractal->pixels[row][col].value.normal > max)
 		max = fractal->pixels[row][col].value.normal;
 	    }
@@ -1054,13 +1077,14 @@ main (int argc, char **argv)
 	exit (EXIT_FAILURE);
     }
   /* gamma and log correct */
+  printf ("Finializing and writing out...\n");
   gamma_log (&fractal);
-	printf ("Finializing and writing out...\n");
   if (fractal.sup > 1)
     {
       reduce (&fractal);
     }
   /* write out the file */
+  /*gamma_log (&fractal); */
   write_to_tiff (&fractal);
   /* clean up */
   free (threads);
